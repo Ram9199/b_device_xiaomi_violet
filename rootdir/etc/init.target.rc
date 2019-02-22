@@ -31,6 +31,7 @@ on early-init
     exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -a -d /vendor/lib/modules adsp_loader_dlkm apr_dlkm bolero_cdc_dlkm hdmi_dlkm machine_dlkm mbhc_dlkm native_dlkm pinctrl_lpi_dlkm pinctrl_wcd_dlkm platform_dlkm q6_dlkm q6_notifier_dlkm q6_pdr_dlkm rx_macro_dlkm snd_event_dlkm stub_dlkm swr_ctrl_dlkm swr_dlkm tx_macro_dlkm usf_dlkm va_macro_dlkm wcd9xxx_dlkm wcd934x_dlkm wcd937x_dlkm wcd937x_slave_dlkm wcd_core_dlkm wcd_spi_dlkm wglink_dlkm wsa881x_dlkm wsa_macro_dlkm
     write /proc/sys/kernel/sched_boost 1
     symlink /data/tombstones /tombstones
+    exec u:r:qti_init_shell:s0 -- /vendor/bin/init.qti.charger.sh
 
 on init
     write /dev/stune/foreground/schedtune.sched_boost_no_override 1
@@ -200,6 +201,11 @@ on property:sys.shutdown.requested=*
     stop vendor.ims_rtp_daemon
 
 on charger
+    chown radio wakelock /sys/power/wake_lock
+    chmod 0660 /sys/power/wake_lock
+    chown radio wakelock /sys/power/wake_unlock
+    chmod 0660 /sys/power/wake_unlock
+    start vendor.qti-charger-sh
     start vendor.hvdcp_opti
     setprop vendor.usb.controller a600000.dwc3
     setprop sys.usb.configfs 1
@@ -489,8 +495,15 @@ service energy-awareness /system/vendor/bin/energy-awareness
 
 service vendor.hvdcp_opti /vendor/bin/hvdcp_opti
     class main
-    user root
+    user system
     group system wakelock
+    capabilities BLOCK_SUSPEND WAKE_ALARM
+
+service vendor.qti-charger-sh /vendor/bin/init.qti.charger.sh
+    class core
+    user root
+    oneshot
+    disabled
 
 service smcinvoked /system/bin/smcinvoked
     class main
