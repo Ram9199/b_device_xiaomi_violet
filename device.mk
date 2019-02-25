@@ -323,6 +323,7 @@ PRODUCT_PACKAGES += \
     init.qcom.usb.sh \
     init.qti.qseecomd.sh \
     init.qti.fm.sh \
+    init.qti.charger.sh \
     init.target.rc \
     ueventd.qcom.rc \
     fstab.qcom
